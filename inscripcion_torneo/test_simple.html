@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Simple - Sistema de Inscripciones</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 15px; margin: 5px; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Prueba Simple del Sistema de Inscripciones</h1>
+    
+    <div class="test-section">
+        <h3>Prueba de API Endpoints</h3>
+        <button onclick="testGetTorneos()">Probar GET Torneos</button>
+        <button onclick="testGetAsociaciones()">Probar GET Asociaciones</button>
+        <button onclick="testGetAtletasDisponibles()">Probar GET Atletas Disponibles</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Prueba de Flujo Completo</h3>
+        <select id="torneo_test">
+            <option value="0">-- Seleccione un torneo --</option>
+        </select>
+        <select id="asociacion_test" disabled>
+            <option value="0">-- Seleccione una asociación --</option>
+        </select>
+        <button onclick="testFlujoCompleto()">Probar Flujo</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        // Cargar datos iniciales
+        window.onload = async function() {
+            await cargarDatosIniciales();
+        };
+
+        async function cargarDatosIniciales() {
+            try {
+                // Cargar torneos
+                const responseTorneos = await fetch('api/inscripcion.php?action=get_torneos');
+                const dataTorneos = await responseTorneos.json();
+                
+                if (dataTorneos.success) {
+                    const torneoSelect = document.getElementById('torneo_test');
+                    dataTorneos.torneos.forEach(torneo => {
+                        const option = document.createElement('option');
+                        option.value = torneo.id;
+                        option.textContent = `${torneo.nombre} - ${torneo.lugar}`;
+                        torneoSelect.appendChild(option);
+                    });
+                }
+
+                // Cargar asociaciones
+                const responseAsociaciones = await fetch('api/inscripcion.php?action=get_asociaciones');
+                const dataAsociaciones = await responseAsociaciones.json();
+                
+                if (dataAsociaciones.success) {
+                    const asociacionSelect = document.getElementById('asociacion_test');
+                    dataAsociaciones.asociaciones.forEach(asociacion => {
+                        const option = document.createElement('option');
+                        option.value = asociacion.id;
+                        option.textContent = asociacion.nombre;
+                        asociacionSelect.appendChild(option);
+                    });
+                }
+
+                // Habilitar selector de asociación cuando se seleccione torneo
+                document.getElementById('torneo_test').addEventListener('change', function() {
+                    const asociacionSelect = document.getElementById('asociacion_test');
+                    asociacionSelect.disabled = this.value === '0';
+                    if (this.value === '0') {
+                        asociacionSelect.value = '0';
+                    }
+                });
+
+            } catch (error) {
+                mostrarResultado('Error al cargar datos iniciales: ' + error.message, 'error');
+            }
+        }
+
+        async function testGetTorneos() {
+            try {
+                const response = await fetch('api/inscripcion.php?action=get_torneos');
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarResultado(`✅ Torneos cargados: ${data.torneos.length} torneos encontrados`, 'success');
+                    console.log('Torneos:', data.torneos);
+                } else {
+                    mostrarResultado(`❌ Error al cargar torneos: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                mostrarResultado(`❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetAsociaciones() {
+            try {
+                const response = await fetch('api/inscripcion.php?action=get_asociaciones');
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarResultado(`✅ Asociaciones cargadas: ${data.asociaciones.length} asociaciones encontradas`, 'success');
+                    console.log('Asociaciones:', data.asociaciones);
+                } else {
+                    mostrarResultado(`❌ Error al cargar asociaciones: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                mostrarResultado(`❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetAtletasDisponibles() {
+            const asociacionId = document.getElementById('asociacion_test').value;
+            
+            if (asociacionId === '0') {
+                mostrarResultado('❌ Primero seleccione una asociación', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`api/inscripcion.php?action=get_disponibles&asociacion_id=${asociacionId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarResultado(`✅ Atletas disponibles cargados: ${data.count} atletas encontrados`, 'success');
+                    console.log('Atletas disponibles:', data.atletas);
+                } else {
+                    mostrarResultado(`❌ Error al cargar atletas disponibles: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                mostrarResultado(`❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFlujoCompleto() {
+            const torneoId = document.getElementById('torneo_test').value;
+            const asociacionId = document.getElementById('asociacion_test').value;
+            
+            if (torneoId === '0' || asociacionId === '0') {
+                mostrarResultado('❌ Seleccione tanto un torneo como una asociación', 'error');
+                return;
+            }
+
+            mostrarResultado('🔄 Probando flujo completo...', 'success');
+            
+            try {
+                // Probar obtener atletas disponibles
+                const responseDisponibles = await fetch(`api/inscripcion.php?action=get_disponibles&asociacion_id=${asociacionId}`);
+                const dataDisponibles = await responseDisponibles.json();
+                
+                // Probar obtener atletas inscritos
+                const responseInscritos = await fetch(`api/inscripcion.php?action=get_inscritos&asociacion_id=${asociacionId}&torneo_id=${torneoId}`);
+                const dataInscritos = await responseInscritos.json();
+                
+                // Probar obtener estadísticas
+                const responseEstadisticas = await fetch(`api/inscripcion.php?action=get_estadisticas&asociacion_id=${asociacionId}&torneo_id=${torneoId}`);
+                const dataEstadisticas = await responseEstadisticas.json();
+                
+                let resultado = '✅ Flujo completo probado exitosamente:<br>';
+                resultado += `- Atletas disponibles: ${dataDisponibles.success ? dataDisponibles.count : 'Error'}<br>`;
+                resultado += `- Atletas inscritos: ${dataInscritos.success ? dataInscritos.count : 'Error'}<br>`;
+                resultado += `- Estadísticas: ${dataEstadisticas.success ? 'OK' : 'Error'}`;
+                
+                mostrarResultado(resultado, 'success');
+                
+                console.log('Resultados del flujo:', {
+                    disponibles: dataDisponibles,
+                    inscritos: dataInscritos,
+                    estadisticas: dataEstadisticas
+                });
+                
+            } catch (error) {
+                mostrarResultado(`❌ Error en el flujo completo: ${error.message}`, 'error');
+            }
+        }
+
+        function mostrarResultado(mensaje, tipo) {
+            const resultsDiv = document.getElementById('results');
+            const resultadoDiv = document.createElement('div');
+            resultadoDiv.className = tipo;
+            resultadoDiv.innerHTML = mensaje;
+            resultadoDiv.style.margin = '10px 0';
+            resultadoDiv.style.padding = '10px';
+            resultadoDiv.style.border = '1px solid #ddd';
+            resultadoDiv.style.borderRadius = '5px';
+            
+            resultsDiv.appendChild(resultadoDiv);
+            
+            // Limpiar resultados anteriores después de 10 segundos
+            setTimeout(() => {
+                resultadoDiv.remove();
+            }, 10000);
+        }
+    </script>
+</body>
+</html>

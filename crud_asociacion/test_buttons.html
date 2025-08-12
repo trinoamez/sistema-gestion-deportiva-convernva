@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Botones</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .btn-action {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            border: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 35px;
+            height: 35px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Test de Botones de Acción</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Botones de Acción</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-info btn-action" onclick="testView(1)" title="Ver detalles">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-warning btn-action" onclick="testEdit(1)" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-action" onclick="testToggle(1)" title="Cambiar estado">
+                        <i class="fas fa-toggle-on"></i>
+                    </button>
+                    <button class="btn btn-danger btn-action" onclick="testDelete(1)" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h3>Log de Eventos</h3>
+                <div id="log" class="border p-3" style="height: 200px; overflow-y: auto; background-color: #f8f9fa;">
+                    <p class="text-muted">Los eventos aparecerán aquí...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<p><strong>[${timestamp}]</strong> ${message}</p>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function testView(id) {
+            log(`Función viewAsociacion(${id}) llamada`);
+            alert(`Función viewAsociacion(${id}) llamada correctamente`);
+        }
+
+        function testEdit(id) {
+            log(`Función editAsociacion(${id}) llamada`);
+            alert(`Función editAsociacion(${id}) llamada correctamente`);
+        }
+
+        function testToggle(id) {
+            log(`Función toggleStatus(${id}) llamada`);
+            if(confirm('¿Estás seguro de que quieres cambiar el estado?')) {
+                log(`Confirmación aceptada para toggleStatus(${id})`);
+                alert(`Función toggleStatus(${id}) ejecutada correctamente`);
+            } else {
+                log(`Confirmación cancelada para toggleStatus(${id})`);
+            }
+        }
+
+        function testDelete(id) {
+            log(`Función deleteAsociacion(${id}) llamada`);
+            if(confirm('¿Estás seguro de que quieres eliminar?')) {
+                log(`Confirmación aceptada para deleteAsociacion(${id})`);
+                alert(`Función deleteAsociacion(${id}) ejecutada correctamente`);
+            } else {
+                log(`Confirmación cancelada para deleteAsociacion(${id})`);
+            }
+        }
+
+        // Verificar carga de scripts
+        log('Página cargada');
+        log('Bootstrap: ' + (typeof bootstrap !== 'undefined' ? 'Cargado' : 'No cargado'));
+        log('Font Awesome: ' + (document.querySelector('.fas') ? 'Iconos encontrados' : 'Iconos no encontrados'));
+    </script>
+</body>
+</html> 

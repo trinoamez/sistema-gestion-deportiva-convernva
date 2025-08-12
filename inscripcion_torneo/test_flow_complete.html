@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Flujo Completo - Sistema de Inscripciones</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .selector-group { margin: 20px 0; }
+        select { padding: 8px; margin: 5px; min-width: 200px; }
+        select:disabled { background-color: #f5f5f5; color: #999; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; }
+        .mensaje-ayuda { color: #666; font-style: italic; margin-top: 5px; }
+        .tables-container { margin-top: 20px; }
+        .table-section { margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Test Flujo Completo - Sistema de Inscripciones</h1>
+    
+    <div class="selector-group">
+        <label for="torneo_select">Seleccionar Torneo:</label>
+        <select id="torneo_select" onchange="cambiarTorneo()">
+            <option value="0">-- Seleccione un torneo --</option>
+            <option value="1">Torneo 1 - Lugar A - 01/01/2024</option>
+            <option value="2">Torneo 2 - Lugar B - 02/01/2024</option>
+            <option value="3">Torneo 3 - Lugar C - 03/01/2024</option>
+        </select>
+    </div>
+
+    <div class="selector-group">
+        <label for="asociacion_select">Seleccionar Asociación:</label>
+        <select id="asociacion_select" onchange="cambiarAsociacion()" disabled>
+            <option value="0">-- Seleccione una asociación --</option>
+            <option value="1">Asociación A</option>
+            <option value="2">Asociación B</option>
+            <option value="3">Asociación C</option>
+        </select>
+        <div class="mensaje-ayuda" id="mensaje_ayuda">Primero seleccione un torneo</div>
+    </div>
+
+    <div class="debug" id="debug_info">
+        <strong>Estado actual:</strong><br>
+        Torneo seleccionado: <span id="torneo_estado">0</span><br>
+        Asociación seleccionada: <span id="asociacion_estado">0</span><br>
+        Asociación habilitada: <span id="asociacion_habilitada">false</span><br>
+        Última acción: <span id="ultima_accion">Ninguna</span>
+    </div>
+
+    <div class="tables-container" id="tables_container" style="display: none;">
+        <div class="table-section">
+            <h3>Atletas Disponibles</h3>
+            <table id="tabla_disponibles">
+                <thead>
+                    <tr><th>ID</th><th>Nombre</th><th>Estado</th></tr>
+                </thead>
+                <tbody id="tbody_disponibles">
+                    <tr><td colspan="3">No hay datos</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-section">
+            <h3>Atletas Inscritos</h3>
+            <table id="tabla_inscritos">
+                <thead>
+                    <tr><th>ID</th><th>Nombre</th><th>Estado</th></tr>
+                </thead>
+                <tbody id="tbody_inscritos">
+                    <tr><td colspan="3">No hay datos</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Simular datos de la API
+        const mockData = {
+            atletas_disponibles: [
+                { id: 1, nombre: 'Juan Pérez', estatus: 'Activo' },
+                { id: 2, nombre: 'María García', estatus: 'Activo' },
+                { id: 3, nombre: 'Carlos López', estatus: 'Pendiente' }
+            ],
+            atletas_inscritos: [
+                { id: 4, nombre: 'Ana Rodríguez', estatus: 'Inscrito' },
+                { id: 5, nombre: 'Luis Martínez', estatus: 'Inscrito' }
+            ]
+        };
+
+        function cambiarTorneo() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            const mensajeAyuda = document.getElementById('mensaje_ayuda');
+            
+            const torneoId = parseInt(torneoSelect.value);
+            
+            console.log('=== CAMBIAR TORNEO ===');
+            console.log('Valor del torneo:', torneoId);
+            console.log('Tipo de valor:', typeof torneoId);
+            
+            if (torneoId > 0) {
+                asociacionSelect.disabled = false;
+                asociacionSelect.value = '0';
+                mensajeAyuda.style.display = 'none';
+                console.log('✅ Torneo seleccionado, asociación habilitada');
+                actualizarUltimaAccion('Torneo seleccionado: ' + torneoId);
+            } else {
+                asociacionSelect.disabled = true;
+                asociacionSelect.value = '0';
+                mensajeAyuda.style.display = 'block';
+                console.log('❌ No hay torneo seleccionado, asociación deshabilitada');
+                actualizarUltimaAccion('Torneo deseleccionado');
+            }
+            
+            // Ocultar tablas al cambiar torneo
+            document.getElementById('tables_container').style.display = 'none';
+            
+            actualizarDebug();
+        }
+
+        function cambiarAsociacion() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            
+            const torneoId = parseInt(torneoSelect.value);
+            const asociacionId = parseInt(asociacionSelect.value);
+            
+            console.log('=== CAMBIAR ASOCIACIÓN ===');
+            console.log('Torneo:', torneoId, 'Asociación:', asociacionId);
+            console.log('Tipos - Torneo:', typeof torneoId, 'Asociación:', typeof asociacionId);
+            
+            if (torneoId > 0 && asociacionId > 0) {
+                console.log('✅ Ambos seleccionados, procediendo a cargar datos...');
+                actualizarUltimaAccion('Cargando datos para Torneo ' + torneoId + ' y Asociación ' + asociacionId);
+                
+                // Simular carga de datos
+                setTimeout(() => {
+                    cargarDatosSimulados(torneoId, asociacionId);
+                }, 500);
+                
+            } else {
+                console.log('❌ Faltan selecciones, no se pueden cargar datos');
+                actualizarUltimaAccion('Faltan selecciones para cargar datos');
+            }
+            
+            actualizarDebug();
+        }
+
+        function cargarDatosSimulados(torneoId, asociacionId) {
+            console.log('=== CARGANDO DATOS ===');
+            console.log('Torneo ID:', torneoId, 'Asociación ID:', asociacionId);
+            
+            // Simular llamadas a la API
+            const atletasDisponibles = mockData.atletas_disponibles;
+            const atletasInscritos = mockData.atletas_inscritos;
+            
+            console.log('Datos obtenidos:', {
+                disponibles: atletasDisponibles.length,
+                inscritos: atletasInscritos.length
+            });
+            
+            // Renderizar tablas
+            renderizarTablaDisponibles(atletasDisponibles);
+            renderizarTablaInscritos(atletasInscritos);
+            
+            // Mostrar contenedor de tablas
+            document.getElementById('tables_container').style.display = 'block';
+            
+            actualizarUltimaAccion('Datos cargados exitosamente');
+            console.log('✅ Datos cargados y tablas renderizadas');
+        }
+
+        function renderizarTablaDisponibles(atletas) {
+            const tbody = document.getElementById('tbody_disponibles');
+            if (atletas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3">No hay atletas disponibles</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            atletas.forEach(atleta => {
+                html += `<tr><td>${atleta.id}</td><td>${atleta.nombre}</td><td>${atleta.estatus}</td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderizarTablaInscritos(atletas) {
+            const tbody = document.getElementById('tbody_inscritos');
+            if (atletas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3">No hay atletas inscritos</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            atletas.forEach(atleta => {
+                html += `<tr><td>${atleta.id}</td><td>${atleta.nombre}</td><td>${atleta.estatus}</td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function actualizarDebug() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            
+            document.getElementById('torneo_estado').textContent = torneoSelect.value;
+            document.getElementById('asociacion_estado').textContent = asociacionSelect.value;
+            document.getElementById('asociacion_habilitada').textContent = !asociacionSelect.disabled;
+        }
+
+        function actualizarUltimaAccion(accion) {
+            document.getElementById('ultima_accion').textContent = accion;
+            console.log('📝 Última acción:', accion);
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página cargada, estado inicial:');
+            console.log('Torneo:', document.getElementById('torneo_select').value);
+            console.log('Asociación:', document.getElementById('asociacion_select').value);
+            console.log('Asociación habilitada:', !document.getElementById('asociacion_select').disabled);
+            
+            actualizarDebug();
+            actualizarUltimaAccion('Página cargada');
+        });
+    </script>
+</body>
+</html>

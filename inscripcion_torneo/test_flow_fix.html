@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Flow Fix - Selector de Asociaciones</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .selector-group { margin: 20px 0; }
+        select { padding: 8px; margin: 5px; }
+        button { padding: 8px 16px; margin: 5px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        .step { background: #e8f4f8; padding: 10px; margin: 10px 0; border-left: 4px solid #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>Test Flow Fix - Selector de Asociaciones</h1>
+    
+    <div class="selector-group">
+        <label for="torneo_select">Torneo:</label>
+        <select id="torneo_select">
+            <option value="0">-- Seleccione un torneo --</option>
+            <option value="1">Torneo 1</option>
+            <option value="2">Torneo 2</option>
+        </select>
+    </div>
+    
+    <div class="selector-group">
+        <label for="asociacion_select">Asociación:</label>
+        <select id="asociacion_select" disabled>
+            <option value="0">-- Seleccione una asociación --</option>
+            <option value="1">Asociación 1</option>
+            <option value="2">Asociación 2</option>
+        </select>
+    </div>
+    
+    <div class="selector-group">
+        <button onclick="testCompleteFlow()">Test Complete Flow</button>
+        <button onclick="testStepByStep()">Test Step by Step</button>
+        <button onclick="clearDebug()">Clear Debug</button>
+    </div>
+    
+    <div id="debug" class="debug">
+        <h3>Debug Output:</h3>
+        <div id="debug-content"></div>
+    </div>
+
+    <script>
+        const torneoSelect = document.getElementById('torneo_select');
+        const asociacionSelect = document.getElementById('asociacion_select');
+        
+        function log(message, type = 'info') {
+            const debugContent = document.getElementById('debug-content');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span class="${type}">[${timestamp}] ${message}</span>`;
+            debugContent.appendChild(logEntry);
+            console.log(message);
+        }
+        
+        function clearDebug() {
+            document.getElementById('debug-content').innerHTML = '';
+        }
+        
+        function logStep(step, message) {
+            const debugContent = document.getElementById('debug-content');
+            const stepDiv = document.createElement('div');
+            stepDiv.className = 'step';
+            stepDiv.innerHTML = `<strong>${step}</strong>: ${message}`;
+            debugContent.appendChild(stepDiv);
+        }
+        
+        function testStepByStep() {
+            log('=== Test Step by Step ===', 'info');
+            
+            // Step 1: Initial state
+            logStep('1', 'Initial state');
+            log(`Torneo: "${torneoSelect.value}" (parseInt: ${parseInt(torneoSelect.value)})`);
+            log(`Asociación: "${asociacionSelect.value}" (parseInt: ${parseInt(asociacionSelect.value)})`);
+            log(`Asociación disabled: ${asociacionSelect.disabled}`);
+            
+            // Step 2: Select tournament
+            logStep('2', 'Selecting tournament');
+            torneoSelect.value = '1';
+            log(`Torneo changed to: "${torneoSelect.value}"`);
+            
+            // Simulate change event
+            cambiarTorneo();
+            
+            log(`After cambiarTorneo():`);
+            log(`Torneo: "${torneoSelect.value}" (parseInt: ${parseInt(torneoSelect.value)})`);
+            log(`Asociación: "${asociacionSelect.value}" (parseInt: ${parseInt(asociacionSelect.value)})`);
+            log(`Asociación disabled: ${asociacionSelect.disabled}`);
+            
+            // Step 3: Select association
+            logStep('3', 'Selecting association');
+            asociacionSelect.value = '1';
+            log(`Asociación changed to: "${asociacionSelect.value}"`);
+            
+            // Simulate change event
+            cambiarAsociacion();
+            
+            log(`After cambiarAsociacion():`);
+            log(`Torneo: "${torneoSelect.value}" (parseInt: ${parseInt(torneoSelect.value)})`);
+            log(`Asociación: "${asociacionSelect.value}" (parseInt: ${parseInt(asociacionSelect.value)})`);
+            log(`Asociación disabled: ${asociacionSelect.disabled}`);
+            
+            // Step 4: Test validation
+            logStep('4', 'Testing validation');
+            const torneoId = parseInt(torneoSelect.value);
+            const asociacionId = parseInt(asociacionSelect.value);
+            log(`Validation: torneoId=${torneoId} > 0: ${torneoId > 0}, asociacionId=${asociacionId} > 0: ${asociacionId > 0}`);
+            log(`Both valid: ${torneoId > 0 && asociacionId > 0}`);
+        }
+        
+        function testCompleteFlow() {
+            log('=== Test Complete Flow ===', 'info');
+            
+            // Reset to initial state
+            torneoSelect.value = '0';
+            asociacionSelect.value = '0';
+            asociacionSelect.disabled = true;
+            
+            log('1. Initial state reset');
+            log(`Torneo: "${torneoSelect.value}", Asociación: "${asociacionSelect.value}", Disabled: ${asociacionSelect.disabled}`);
+            
+            // Select tournament
+            log('2. Selecting tournament...');
+            torneoSelect.value = '1';
+            cambiarTorneo();
+            log(`After tournament selection: Torneo: "${torneoSelect.value}", Asociación: "${asociacionSelect.value}", Disabled: ${asociacionSelect.disabled}`);
+            
+            // Select association
+            log('3. Selecting association...');
+            asociacionSelect.value = '1';
+            cambiarAsociacion();
+            log(`After association selection: Torneo: "${torneoSelect.value}", Asociación: "${asociacionSelect.value}", Disabled: ${asociacionSelect.disabled}`);
+            
+            // Test final state
+            log('4. Final validation test');
+            const torneoId = parseInt(torneoSelect.value);
+            const asociacionId = parseInt(asociacionSelect.value);
+            const bothValid = torneoId > 0 && asociacionId > 0;
+            log(`Final state: torneoId=${torneoId}, asociacionId=${asociacionId}, bothValid=${bothValid}`);
+            
+            if (bothValid) {
+                log('✅ SUCCESS: Both selections are valid, should load data', 'success');
+            } else {
+                log('❌ FAILURE: One or both selections are invalid', 'error');
+            }
+        }
+        
+        // Simulate the cambiarTorneo function from the main app
+        function cambiarTorneo() {
+            log('🔄 cambiarTorneo() called', 'info');
+            
+            if (parseInt(torneoSelect.value) > 0) {
+                asociacionSelect.disabled = false;
+                asociacionSelect.value = '0';
+                log('✅ Asociación selector enabled and reset', 'success');
+            } else {
+                asociacionSelect.disabled = true;
+                asociacionSelect.value = '0';
+                log('❌ Asociación selector disabled and reset', 'error');
+            }
+            
+            // Test the fixed condition
+            if (parseInt(torneoSelect.value) > 0 && parseInt(asociacionSelect.value) > 0) {
+                log('✅ Condition met: Both valid, would call cargarDatosAsociacion()', 'success');
+            } else {
+                log('ℹ️ Condition not met: One or both invalid', 'info');
+            }
+        }
+        
+        // Simulate the cambiarAsociacion function from the main app
+        function cambiarAsociacion() {
+            log('🔄 cambiarAsociacion() called', 'info');
+            
+            if (parseInt(torneoSelect.value) > 0 && parseInt(asociacionSelect.value) > 0) {
+                log('✅ Both valid, would call cargarDatosAsociacion()', 'success');
+            } else {
+                log('❌ One or both invalid, would show error message', 'error');
+            }
+        }
+        
+        // Event listeners
+        torneoSelect.addEventListener('change', function() {
+            log(`🔄 Torneo changed to: ${this.value}`, 'info');
+            cambiarTorneo();
+        });
+        
+        asociacionSelect.addEventListener('change', function() {
+            log(`🔄 Asociación changed to: ${this.value}`, 'info');
+            cambiarAsociacion();
+        });
+        
+        // Initial state
+        log('🚀 Test initialized', 'info');
+        log(`Initial state: Torneo: "${torneoSelect.value}", Asociación: "${asociacionSelect.value}", Disabled: ${asociacionSelect.disabled}`);
+    </script>
+</body>
+</html>

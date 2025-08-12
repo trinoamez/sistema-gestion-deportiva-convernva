@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Debug - Selectores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .selector-group { margin: 20px 0; }
+        select { padding: 8px; margin: 5px; min-width: 200px; }
+        .debug-info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Test Debug - Selectores de Torneo y Asociación</h1>
+    
+    <div class="selector-group">
+        <label for="torneo_select">Torneo:</label>
+        <select id="torneo_select" onchange="cambiarTorneo()">
+            <option value="0">Seleccione un torneo</option>
+            <option value="1">Torneo 1</option>
+            <option value="2">Torneo 2</option>
+            <option value="3">Torneo 3</option>
+        </select>
+    </div>
+    
+    <div class="selector-group">
+        <label for="asociacion_select">Asociación:</label>
+        <select id="asociacion_select" onchange="cambiarAsociacion()" disabled>
+            <option value="0">Seleccione una asociación</option>
+            <option value="1">Asociación 1</option>
+            <option value="2">Asociación 2</option>
+            <option value="3">Asociación 3</option>
+        </select>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Información de Debug:</h3>
+        <div id="debug_output">Seleccione un torneo y una asociación para ver la información...</div>
+    </div>
+    
+    <button onclick="testAPI()">Test API Calls</button>
+    <button onclick="clearDebug()">Limpiar Debug</button>
+    
+    <script>
+        function log(message, data = null) {
+            const debugOutput = document.getElementById('debug_output');
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            
+            if (data) {
+                console.log(logMessage, data);
+                debugOutput.innerHTML += `<div><strong>${logMessage}</strong><br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+            } else {
+                console.log(logMessage);
+                debugOutput.innerHTML += `<div><strong>${logMessage}</strong></div>`;
+            }
+        }
+        
+        function cambiarTorneo() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            
+            log('cambiarTorneo() llamado');
+            log('Valor del torneo seleccionado:', torneoSelect.value);
+            
+            if (torneoSelect.value > 0) {
+                asociacionSelect.disabled = false;
+                asociacionSelect.value = '';
+                log('Torneo seleccionado, asociación habilitada');
+            } else {
+                asociacionSelect.disabled = true;
+                asociacionSelect.value = '';
+                log('No hay torneo seleccionado, asociación deshabilitada');
+            }
+        }
+        
+        function cambiarAsociacion() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            
+            log('cambiarAsociacion() llamado');
+            log('Valores actuales:', {
+                torneo: torneoSelect.value,
+                asociacion: asociacionSelect.value
+            });
+            
+            if (torneoSelect.value > 0 && asociacionSelect.value > 0) {
+                log('Ambos seleccionados, procediendo a cargar datos...');
+                testAPI();
+            } else {
+                log('Faltan selecciones:', {
+                    torneo: torneoSelect.value > 0 ? 'SÍ' : 'NO',
+                    asociacion: asociacionSelect.value > 0 ? 'SÍ' : 'NO'
+                });
+            }
+        }
+        
+        async function testAPI() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            
+            const torneoId = parseInt(torneoSelect.value);
+            const asociacionId = parseInt(asociacionSelect.value);
+            
+            log('Test API - Parámetros:', { torneoId, asociacionId });
+            
+            if (torneoId <= 0 || asociacionId <= 0) {
+                log('ERROR: Parámetros inválidos para API');
+                return;
+            }
+            
+            try {
+                log('Haciendo llamadas a la API...');
+                
+                // Test get_disponibles
+                const response1 = await fetch(`api/inscripcion.php?action=get_disponibles&asociacion_id=${asociacionId}&torneo_id=${torneoId}`);
+                const data1 = await response1.json();
+                log('API get_disponibles response:', data1);
+                
+                // Test get_inscritos
+                const response2 = await fetch(`api/inscripcion.php?action=get_inscritos&asociacion_id=${asociacionId}&torneo_id=${torneoId}`);
+                const data2 = await response2.json();
+                log('API get_inscritos response:', data2);
+                
+                // Test get_estadisticas
+                const response3 = await fetch(`api/inscripcion.php?action=get_estadisticas&asociacion_id=${asociacionId}&torneo_id=${torneoId}`);
+                const data3 = await response3.json();
+                log('API get_estadisticas response:', data3);
+                
+            } catch (error) {
+                log('ERROR en llamadas a la API:', error.message);
+            }
+        }
+        
+        function clearDebug() {
+            document.getElementById('debug_output').innerHTML = 'Debug limpiado...';
+        }
+        
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Página cargada, inicializando selectores...');
+            cambiarTorneo(); // Establecer estado inicial
+        });
+    </script>
+</body>
+</html>

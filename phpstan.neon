@@ -1,0 +1,51 @@
+parameters:
+    # Nivel de análisis (0-9, donde 9 es el más estricto)
+    level: 5
+    
+    # Directorios a analizar
+    paths:
+        - .
+    
+    # Excluir directorios
+    excludePaths:
+        - vendor
+        - node_modules
+        - tests
+        - coverage
+        - assets
+        - uploads
+    
+    # Archivos a excluir
+    excludePaths:
+        - "*.min.js"
+        - "*.min.css"
+        - "*.sql"
+        - "*.log"
+    
+    # Configuración de errores
+    ignoreErrors:
+        # Ignorar errores de archivos de configuración
+        - '#Call to an undefined method [a-zA-Z0-9\\_]+::[a-zA-Z0-9\\_]+#'
+        - '#Access to an undefined property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+#'
+    
+    # Configuración de análisis
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    
+    # Configuración de symlinks
+    symlinks: false
+    
+    # Configuración de memoria
+    memoryLimit: 2G
+    
+    # Configuración de cache
+    cache:
+        directory: .phpstan.cache
+    
+    # Configuración de reportes
+    output:
+        format: table
+        paths: true
+        baseline: phpstan-baseline.neon
+
+

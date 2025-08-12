@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<ruleset name="Convernva Coding Standards">
+    <description>Estándares de código para el Sistema de Gestión Deportiva Convernva</description>
+    
+    <!-- Incluir reglas PSR-12 -->
+    <rule ref="PSR12"/>
+    
+    <!-- Excluir archivos y directorios -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>node_modules/*</exclude-pattern>
+    <exclude-pattern>coverage/*</exclude-pattern>
+    <exclude-pattern>tests/*</exclude-pattern>
+    <exclude-pattern>*.min.js</exclude-pattern>
+    <exclude-pattern>*.min.css</exclude-pattern>
+    
+    <!-- Configuración específica -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="150"/>
+        </properties>
+    </rule>
+    
+    <!-- Permitir comentarios de una línea -->
+    <rule ref="Squiz.Commenting.InlineComment">
+        <properties>
+            <property name="allowedStyles" value="phpdoc,hash"/>
+        </properties>
+    </rule>
+    
+    <!-- Configuración de espacios -->
+    <rule ref="Squiz.WhiteSpace.FunctionSpacing">
+        <properties>
+            <property name="spacing" value="1"/>
+        </properties>
+    </rule>
+    
+    <!-- Reportes -->
+    <arg name="colors"/>
+    <arg name="parallel" value="75"/>
+    <arg name="extensions" value="php"/>
+    
+    <!-- Archivos a analizar -->
+    <file>.</file>
+</ruleset>
+
+

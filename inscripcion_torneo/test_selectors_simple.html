@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Selectores Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .selector-group { margin: 20px 0; }
+        select { padding: 8px; margin: 5px; min-width: 200px; }
+        select:disabled { background-color: #f5f5f5; color: #999; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; }
+        .mensaje-ayuda { color: #666; font-style: italic; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Selectores Simple</h1>
+    
+    <div class="selector-group">
+        <label for="torneo_select">Seleccionar Torneo:</label>
+        <select id="torneo_select" onchange="cambiarTorneo()">
+            <option value="0">-- Seleccione un torneo --</option>
+            <option value="1">Torneo 1 - Lugar A - 01/01/2024</option>
+            <option value="2">Torneo 2 - Lugar B - 02/01/2024</option>
+            <option value="3">Torneo 3 - Lugar C - 03/01/2024</option>
+        </select>
+    </div>
+
+    <div class="selector-group">
+        <label for="asociacion_select">Seleccionar Asociación:</label>
+        <select id="asociacion_select" onchange="cambiarAsociacion()" disabled>
+            <option value="0">-- Seleccione una asociación --</option>
+            <option value="1">Asociación A</option>
+            <option value="2">Asociación B</option>
+            <option value="3">Asociación C</option>
+        </select>
+        <div class="mensaje-ayuda" id="mensaje_ayuda">Primero seleccione un torneo</div>
+    </div>
+
+    <div class="debug" id="debug_info">
+        <strong>Estado actual:</strong><br>
+        Torneo seleccionado: <span id="torneo_estado">0</span><br>
+        Asociación seleccionada: <span id="asociacion_estado">0</span><br>
+        Asociación habilitada: <span id="asociacion_habilitada">false</span>
+    </div>
+
+    <script>
+        function cambiarTorneo() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            const mensajeAyuda = document.getElementById('mensaje_ayuda');
+            
+            console.log('cambiarTorneo - Valor del torneo:', torneoSelect.value);
+            
+            if (parseInt(torneoSelect.value) > 0) {
+                asociacionSelect.disabled = false;
+                asociacionSelect.value = '0';
+                mensajeAyuda.style.display = 'none';
+                console.log('Torneo seleccionado, asociación habilitada');
+            } else {
+                asociacionSelect.disabled = true;
+                asociacionSelect.value = '0';
+                mensajeAyuda.style.display = 'block';
+                console.log('No hay torneo seleccionado, asociación deshabilitada');
+            }
+            
+            actualizarDebug();
+        }
+
+        function cambiarAsociacion() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            
+            console.log('cambiarAsociacion - Torneo:', torneoSelect.value, 'Asociación:', asociacionSelect.value);
+            
+            if (parseInt(torneoSelect.value) > 0 && parseInt(asociacionSelect.value) > 0) {
+                console.log('Ambos seleccionados, procediendo a cargar datos...');
+                // Aquí se cargarían los datos
+            } else {
+                console.log('Faltan selecciones, no se pueden cargar datos');
+            }
+            
+            actualizarDebug();
+        }
+
+        function actualizarDebug() {
+            const torneoSelect = document.getElementById('torneo_select');
+            const asociacionSelect = document.getElementById('asociacion_select');
+            
+            document.getElementById('torneo_estado').textContent = torneoSelect.value;
+            document.getElementById('asociacion_estado').textContent = asociacionSelect.value;
+            document.getElementById('asociacion_habilitada').textContent = !asociacionSelect.disabled;
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página cargada, estado inicial:');
+            console.log('Torneo:', document.getElementById('torneo_select').value);
+            console.log('Asociación:', document.getElementById('asociacion_select').value);
+            console.log('Asociación habilitada:', !document.getElementById('asociacion_select').disabled);
+            
+            actualizarDebug();
+        });
+    </script>
+</body>
+</html>

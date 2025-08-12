@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mínimo - Selectores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .selector-group { margin: 20px 0; }
+        select { padding: 8px; margin: 5px; min-width: 200px; }
+        select:disabled { background-color: #f5f5f5; color: #999; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Test Mínimo - Selectores</h1>
+    
+    <div class="selector-group">
+        <label for="torneo_select">Torneo:</label>
+        <select id="torneo_select" onchange="cambiarTorneo()">
+            <option value="0">-- Seleccione --</option>
+            <option value="1">Torneo 1</option>
+            <option value="2">Torneo 2</option>
+        </select>
+    </div>
+
+    <div class="selector-group">
+        <label for="asociacion_select">Asociación:</label>
+        <select id="asociacion_select" onchange="cambiarAsociacion()" disabled>
+            <option value="0">-- Seleccione --</option>
+            <option value="1">Asociación 1</option>
+            <option value="2">Asociación 2</option>
+        </select>
+    </div>
+
+    <div class="debug" id="debug">
+        <strong>Estado:</strong><br>
+        Torneo: <span id="torneo_valor">0</span><br>
+        Asociación: <span id="asociacion_valor">0</span><br>
+        Asociación habilitada: <span id="asociacion_habilitada">false</span>
+    </div>
+
+    <script>
+        function cambiarTorneo() {
+            const torneo = document.getElementById('torneo_select');
+            const asociacion = document.getElementById('asociacion_select');
+            const valor = parseInt(torneo.value);
+            
+            console.log('Torneo cambiado a:', valor);
+            
+            if (valor > 0) {
+                asociacion.disabled = false;
+                asociacion.value = '0';
+                console.log('Asociación habilitada');
+            } else {
+                asociacion.disabled = true;
+                asociacion.value = '0';
+                console.log('Asociación deshabilitada');
+            }
+            
+            actualizarDebug();
+        }
+
+        function cambiarAsociacion() {
+            const torneo = document.getElementById('torneo_select');
+            const asociacion = document.getElementById('asociacion_select');
+            const torneoValor = parseInt(torneo.value);
+            const asociacionValor = parseInt(asociacion.value);
+            
+            console.log('Asociación cambiada a:', asociacionValor);
+            console.log('Torneo actual:', torneoValor);
+            
+            if (torneoValor > 0 && asociacionValor > 0) {
+                console.log('✅ Ambos seleccionados, cargando datos...');
+                // Aquí se cargarían los datos
+            } else {
+                console.log('❌ Faltan selecciones');
+            }
+            
+            actualizarDebug();
+        }
+
+        function actualizarDebug() {
+            const torneo = document.getElementById('torneo_select');
+            const asociacion = document.getElementById('asociacion_select');
+            
+            document.getElementById('torneo_valor').textContent = torneo.value;
+            document.getElementById('asociacion_valor').textContent = asociacion.value;
+            document.getElementById('asociacion_habilitada').textContent = !asociacion.disabled;
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página cargada');
+            console.log('Torneo inicial:', document.getElementById('torneo_select').value);
+            console.log('Asociación inicial:', document.getElementById('asociacion_select').value);
+            actualizarDebug();
+        });
+    </script>
+</body>
+</html>

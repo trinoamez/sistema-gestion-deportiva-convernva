@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Debug - Selector de Asociaciones</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .selector-group { margin: 20px 0; }
+        select { padding: 8px; margin: 5px; }
+        button { padding: 8px 16px; margin: 5px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Test Debug - Selector de Asociaciones</h1>
+    
+    <div class="selector-group">
+        <label for="torneo_select">Torneo:</label>
+        <select id="torneo_select">
+            <option value="0">-- Seleccione un torneo --</option>
+            <option value="1">Torneo 1</option>
+            <option value="2">Torneo 2</option>
+        </select>
+    </div>
+    
+    <div class="selector-group">
+        <label for="asociacion_select">Asociación:</label>
+        <select id="asociacion_select" disabled>
+            <option value="0">-- Seleccione una asociación --</option>
+            <option value="1">Asociación 1</option>
+            <option value="2">Asociación 2</option>
+        </select>
+    </div>
+    
+    <div class="selector-group">
+        <button onclick="testAPI()">Test API Call</button>
+        <button onclick="testSelectors()">Test Selectors</button>
+        <button onclick="clearDebug()">Clear Debug</button>
+    </div>
+    
+    <div id="debug" class="debug">
+        <h3>Debug Output:</h3>
+        <div id="debug-content"></div>
+    </div>
+
+    <script>
+        const torneoSelect = document.getElementById('torneo_select');
+        const asociacionSelect = document.getElementById('asociacion_select');
+        
+        function log(message, type = 'info') {
+            const debugContent = document.getElementById('debug-content');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span class="${type}">[${timestamp}] ${message}</span>`;
+            debugContent.appendChild(logEntry);
+            console.log(message);
+        }
+        
+        function clearDebug() {
+            document.getElementById('debug-content').innerHTML = '';
+        }
+        
+        function testSelectors() {
+            log('=== Test Selectors ===');
+            log(`Torneo Select: value="${torneoSelect.value}", disabled=${torneoSelect.disabled}`);
+            log(`Asociación Select: value="${asociacionSelect.value}", disabled=${asociacionSelect.disabled}`);
+            log(`Torneo parseInt: ${parseInt(torneoSelect.value)}`);
+            log(`Asociación parseInt: ${parseInt(asociacionSelect.value)}`);
+            log(`Torneo > 0: ${parseInt(torneoSelect.value) > 0}`);
+            log(`Asociación > 0: ${parseInt(asociacionSelect.value) > 0}`);
+        }
+        
+        function testAPI() {
+            const torneoId = parseInt(torneoSelect.value);
+            const asociacionId = parseInt(asociacionSelect.value);
+            
+            log('=== Test API Call ===');
+            log(`Torneo ID: ${torneoId} (type: ${typeof torneoId})`);
+            log(`Asociación ID: ${asociacionId} (type: ${typeof asociacionId})`);
+            
+            if (torneoId <= 0 || asociacionId <= 0) {
+                log('❌ Validation failed: Both IDs must be > 0', 'error');
+                return;
+            }
+            
+            log('✅ Validation passed, making API call...', 'success');
+            
+            // Simulate API call
+            fetch(`api/inscripcion.php?action=get_disponibles&asociacion_id=${asociacionId}&torneo_id=${torneoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    log(`✅ API Response: ${JSON.stringify(data)}`, 'success');
+                })
+                .catch(error => {
+                    log(`❌ API Error: ${error.message}`, 'error');
+                });
+        }
+        
+        // Event listeners
+        torneoSelect.addEventListener('change', function() {
+            log(`🔄 Torneo changed to: ${this.value}`);
+            
+            if (parseInt(this.value) > 0) {
+                asociacionSelect.disabled = false;
+                asociacionSelect.value = '0';
+                log('✅ Asociación selector enabled', 'success');
+            } else {
+                asociacionSelect.disabled = true;
+                asociacionSelect.value = '0';
+                log('❌ Asociación selector disabled', 'error');
+            }
+            
+            testSelectors();
+        });
+        
+        asociacionSelect.addEventListener('change', function() {
+            log(`🔄 Asociación changed to: ${this.value}`);
+            testSelectors();
+        });
+        
+        // Initial state
+        log('🚀 Test initialized');
+        testSelectors();
+    </script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Selectores - Sistema de Inscripciones</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-title {
+            color: #6366f1;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .test-description {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .test-result {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .test-result.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .test-result.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .test-result.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="text-align: center; color: #6366f1; margin-bottom: 30px;">
+            <i class="fas fa-vial"></i> Prueba de Selectores
+        </h1>
+        
+        <div class="test-section">
+            <h2 class="test-title">1. Selectores de Torneo y Asociación</h2>
+            <p class="test-description">
+                Prueba la funcionalidad de los selectores. El selector de asociación debe estar deshabilitado 
+                hasta que se seleccione un torneo.
+            </p>
+            
+            <div class="selectors">
+                <div class="selector-group">
+                    <label for="torneo">Torneo:</label>
+                    <select id="torneo" name="torneo">
+                        <option value="0">Seleccione un torneo</option>
+                        <option value="1">Torneo de Verano 2024</option>
+                        <option value="2">Torneo de Invierno 2024</option>
+                        <option value="3">Torneo Nacional 2024</option>
+                    </select>
+                </div>
+                <div class="selector-group">
+                    <label for="asociacion">Asociación:</label>
+                    <select id="asociacion" name="asociacion" disabled>
+                        <option value="0">Seleccione una asociación</option>
+                        <option value="1">Asociación Central</option>
+                        <option value="2">Asociación Norte</option>
+                        <option value="3">Asociación Sur</option>
+                        <option value="4">Asociación Este</option>
+                        <option value="5">Asociación Oeste</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">2. Mensajes de Estado</h2>
+            <p class="test-description">
+                Prueba los diferentes tipos de mensajes que se muestran al usuario.
+            </p>
+            
+            <button onclick="mostrarMensaje('Este es un mensaje de éxito', 'success')" class="btn btn-success">
+                Mensaje de Éxito
+            </button>
+            <button onclick="mostrarMensaje('Este es un mensaje de error', 'error')" class="btn btn-danger">
+                Mensaje de Error
+            </button>
+            <button onclick="mostrarMensaje('Este es un mensaje de advertencia', 'warning')" class="btn btn-warning">
+                Mensaje de Advertencia
+            </button>
+            <button onclick="mostrarMensaje('Este es un mensaje informativo', 'info')" class="btn btn-primary">
+                Mensaje Informativo
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">3. Indicador de Carga</h2>
+            <p class="test-description">
+                Prueba el indicador de carga que se muestra durante las operaciones.
+            </p>
+            
+            <button onclick="mostrarIndicadorCarga(true)" class="btn btn-primary">
+                Mostrar Carga
+            </button>
+            <button onclick="mostrarIndicadorCarga(false)" class="btn btn-secondary">
+                Ocultar Carga
+            </button>
+        </div>
+        
+        <div id="mensajes"></div>
+    </div>
+
+    <script>
+        // Simular las funciones del sistema principal
+        function mostrarMensaje(mensaje, tipo = 'info') {
+            const mensajeDiv = document.getElementById('mensajes');
+            
+            if (mensajeDiv) {
+                // Limpiar contenido anterior
+                mensajeDiv.innerHTML = '';
+                
+                // Crear elemento de mensaje
+                const mensajeElement = document.createElement('div');
+                mensajeElement.className = `status-message ${tipo}`;
+                mensajeElement.innerHTML = `
+                    <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : tipo === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    <span>${mensaje}</span>
+                `;
+                
+                // Agregar mensaje al contenedor
+                mensajeDiv.appendChild(mensajeElement);
+                
+                // Mostrar mensaje
+                mensajeDiv.style.display = 'block';
+                
+                // Ocultar mensaje después de 5 segundos
+                setTimeout(() => {
+                    mensajeDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        function mostrarIndicadorCarga(mostrar) {
+            if (mostrar) {
+                const tempIndicador = document.createElement('div');
+                tempIndicador.id = 'indicador_carga_temp';
+                tempIndicador.innerHTML = '<div class="loading-spinner">Cargando...</div>';
+                tempIndicador.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    z-index: 9999;
+                `;
+                document.body.appendChild(tempIndicador);
+            } else {
+                const tempIndicador = document.getElementById('indicador_carga_temp');
+                if (tempIndicador) {
+                    tempIndicador.remove();
+                }
+            }
+        }
+        
+        // Configurar event listeners para los selectores
+        document.addEventListener('DOMContentLoaded', function() {
+            const torneoSelect = document.getElementById('torneo');
+            const asociacionSelect = document.getElementById('asociacion');
+            const testResults = document.getElementById('test-results');
+            
+            if (torneoSelect && asociacionSelect) {
+                // Función para cambiar torneo
+                function cambiarTorneo() {
+                    const torneoId = parseInt(torneoSelect.value);
+                    
+                    if (torneoId > 0) {
+                        asociacionSelect.disabled = false;
+                        asociacionSelect.value = '0';
+                        mostrarMensaje('Ahora seleccione una asociación para continuar', 'info');
+                        
+                        // Mostrar resultado de prueba
+                        testResults.innerHTML = `
+                            <div class="test-result success">
+                                <i class="fas fa-check-circle"></i>
+                                ✅ Torneo seleccionado correctamente. Selector de asociación habilitado.
+                            </div>
+                        `;
+                    } else {
+                        asociacionSelect.disabled = true;
+                        asociacionSelect.value = '0';
+                        mostrarMensaje('Seleccione un torneo para continuar', 'info');
+                        
+                        // Mostrar resultado de prueba
+                        testResults.innerHTML = `
+                            <div class="test-result error">
+                                <i class="fas fa-times-circle"></i>
+                                ❌ No hay torneo seleccionado. Selector de asociación deshabilitado.
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Función para cambiar asociación
+                function cambiarAsociacion() {
+                    const torneoId = parseInt(torneoSelect.value);
+                    const asociacionId = parseInt(asociacionSelect.value);
+                    
+                    if (torneoId <= 0) {
+                        asociacionSelect.value = '0';
+                        asociacionSelect.disabled = true;
+                        mostrarMensaje('Debe seleccionar un torneo primero', 'warning');
+                        
+                        // Mostrar resultado de prueba
+                        testResults.innerHTML = `
+                            <div class="test-result error">
+                                <i class="fas fa-times-circle"></i>
+                                ❌ Error: No se puede seleccionar asociación sin torneo.
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    if (asociacionId > 0) {
+                        mostrarMensaje('Ambos selectores seleccionados correctamente', 'success');
+                        
+                        // Mostrar resultado de prueba
+                        testResults.innerHTML = `
+                            <div class="test-result success">
+                                <i class="fas fa-check-circle"></i>
+                                ✅ Ambos selectores configurados correctamente. 
+                                Torneo: ${torneoSelect.options[torneoSelect.selectedIndex].text}, 
+                                Asociación: ${asociacionSelect.options[asociacionSelect.selectedIndex].text}
+                            </div>
+                        `;
+                    } else {
+                        mostrarMensaje('Seleccione una asociación para ver los datos', 'info');
+                        
+                        // Mostrar resultado de prueba
+                        testResults.innerHTML = `
+                            <div class="test-result info">
+                                <i class="fas fa-info-circle"></i>
+                                ℹ️ Asociación deseleccionada. Seleccione una para continuar.
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Agregar event listeners
+                torneoSelect.addEventListener('change', cambiarTorneo);
+                asociacionSelect.addEventListener('change', cambiarAsociacion);
+                
+                // Mostrar estado inicial
+                testResults.innerHTML = `
+                    <div class="test-result info">
+                        <i class="fas fa-info-circle"></i>
+                        ℹ️ Estado inicial: Seleccione un torneo para comenzar.
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
