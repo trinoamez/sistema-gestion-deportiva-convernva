@@ -239,3 +239,6 @@ Este proyecto está bajo la licencia MIT. Ver el archivo `LICENSE` para más det
 ---
 
 **Desarrollado con ❤️ para Convernva**
+#   s i s t e m a - g e s t i � n - d e p o r t i v a - c o n v e r n v a  
+ #   s i s t e m a - g e s t i � n - d e p o r t i v a - c o n v e r n v a  
+ 
