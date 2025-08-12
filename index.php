@@ -1,117 +1,45 @@
 <?php
-// Configuración de la aplicación
 session_start();
+require_once 'config/database.php';
 
-// Configuración hardcodeada para evitar problemas de inclusión
-$applications = [
-    'gestión_deportiva' => [
-        'title' => '🏃‍♂️ Gestión Deportiva',
-        'description' => 'Sistemas para la gestión de atletas, asociaciones y torneos',
-        'apps' => [
-            [
-                'name' => 'Atletas',
-                'description' => 'Gestión completa de atletas con fotos, cédulas y movimientos',
-                'url' => 'crud_atleta/',
-                'status' => 'active',
-                'color' => 'primary',
-                'icon' => 'fas fa-running'
-            ],
-            [
-                'name' => 'Asociaciones',
-                'description' => 'Administración de asociaciones deportivas',
-                'url' => 'crud_asociacion/',
-                'status' => 'active',
-                'color' => 'success',
-                'icon' => 'fas fa-users'
-            ],
-            [
-                'name' => 'Torneos',
-                'description' => 'Gestión de torneos y competencias',
-                'url' => 'crud_torneos/',
-                'status' => 'active',
-                'color' => 'warning',
-                'icon' => 'fas fa-trophy'
-            ]
-        ]
-    ],
-    'inscripciones' => [
-        'title' => '📝 Inscripciones',
-        'description' => 'Sistemas para gestionar inscripciones a torneos y eventos',
-        'apps' => [
-            [
-                'name' => 'Inscripciones Torneos',
-                'description' => 'Sistema de inscripción a torneos con gestión de atletas',
-                'url' => 'inscripcion_torneo/',
-                'status' => 'active',
-                'color' => 'info',
-                'icon' => 'fas fa-clipboard-list'
-            ],
-            [
-                'name' => 'CRUD Inscripciones',
-                'description' => 'Gestión completa de inscripciones temporales',
-                'url' => 'crud_inscripciones/',
-                'status' => 'active',
-                'color' => 'secondary',
-                'icon' => 'fas fa-edit'
-            ]
-        ]
-    ],
-    'financiero' => [
-        'title' => '💰 Gestión Financiera',
-        'description' => 'Sistemas para la gestión de costos y finanzas',
-        'apps' => [
-            [
-                'name' => 'Costos',
-                'description' => 'Gestión de costos y presupuestos',
-                'url' => 'crud_costos/',
-                'status' => 'active',
-                'color' => 'danger',
-                'icon' => 'fas fa-dollar-sign'
-            ],
-            [
-                'name' => 'Gestión Financiera',
-                'description' => 'Control de deudas y pagos de asociaciones',
-                'url' => 'gestion_financiera/',
-                'status' => 'active',
-                'color' => 'success',
-                'icon' => 'fas fa-chart-line'
-            ]
-        ]
-    ],
-    'estadisticas' => [
-        'title' => '📊 Estadísticas y Reportes',
-        'description' => 'Sistemas de análisis y reportes estadísticos',
-        'apps' => [
-            [
-                'name' => 'Estadísticas Inscripciones',
-                'description' => 'Análisis estadístico de inscripciones y participación',
-                'url' => 'estadisticas_inscripcion/',
-                'status' => 'active',
-                'color' => 'dark',
-                'icon' => 'fas fa-chart-bar'
-            ]
-        ]
-    ]
-];
-
-// Obtener estadísticas generales
+// Obtener estadísticas rápidas
 $stats = [
-    'total_apps' => 0,
-    'total_categories' => count($applications),
-    'active_apps' => 0
+    'asociaciones' => 0,
+    'atletas' => 0,
+    'torneos' => 0,
+    'deudas' => 0,
+    'inscripciones' => 0
 ];
 
-foreach ($applications as $category) {
-    if (isset($category['apps']) && is_array($category['apps'])) {
-        $stats['total_apps'] += count($category['apps']);
-        foreach ($category['apps'] as $app) {
-            if (isset($app['status']) && $app['status'] === 'active') {
-                $stats['active_apps']++;
-            }
-        }
-    }
+try {
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Contar asociaciones
+    $stmt = $pdo->query("SELECT COUNT(*) FROM asociaciones WHERE estatus = 'activo'");
+    $stats['asociaciones'] = $stmt->fetchColumn();
+    
+    // Contar atletas
+    $stmt = $pdo->query("SELECT COUNT(*) FROM atletas WHERE estatus = 1");
+    $stats['atletas'] = $stmt->fetchColumn();
+    
+    // Contar torneos
+    $stmt = $pdo->query("SELECT COUNT(*) FROM torneos WHERE estatus = 'activo'");
+    $stats['torneos'] = $stmt->fetchColumn();
+    
+    // Contar deudas
+    $stmt = $pdo->query("SELECT COUNT(*) FROM deuda_asociaciones WHERE estatus = 'pendiente'");
+    $stats['deudas'] = $stmt->fetchColumn();
+    
+    // Contar inscripciones
+    $stmt = $pdo->query("SELECT COUNT(*) FROM inscripciones_torneos");
+    $stats['inscripciones'] = $stmt->fetchColumn();
+    
+} catch(PDOException $e) {
+    // Si hay error, usar valores por defecto
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -119,297 +47,573 @@ foreach ($applications as $category) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión Deportiva - Convernva</title>
     
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- CSS Personalizado -->
+    <link href="assets/css/main.css" rel="stylesheet">
     
     <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #111827;
+            --light-color: #f8fafc;
+            --gradient-primary: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #1f2937;
-            line-height: 1.6;
+            color: var(--dark-color);
         }
-        .main-container {
+
+        .navbar {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            margin: 20px auto;
-            max-width: 1400px;
-            overflow: hidden;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem 2rem;
-            text-align: center;
-            position: relative;
-        }
-        .header h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 2rem;
-        }
-        .stats-container {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-        .stat-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
-            min-width: 150px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .stat-number {
-            display: block;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        .content {
-            padding: 3rem 2rem;
-        }
-        .category-section {
-            margin-bottom: 3rem;
-        }
-        .category-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .category-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .category-description {
-            font-size: 1.1rem;
-            color: #64748b;
-            max-width: 600px;
-            margin: 0 auto;
+
+        .hero-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .apps-grid {
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            margin: -50px auto 50px;
+            padding: 50px;
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
-        .app-card {
+
+        .stat-card {
             background: white;
             border-radius: 20px;
             padding: 2rem;
+            text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .app-card:hover {
+
+        .stat-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
-        .app-header {
-            text-align: center;
-            margin-bottom: 1.5rem;
+
+        .stat-card.primary { background: var(--gradient-primary); color: white; }
+        .stat-card.secondary { background: var(--gradient-secondary); color: white; }
+        .stat-card.success { background: var(--gradient-success); color: white; }
+        .stat-card.warning { background: var(--gradient-warning); color: white; }
+        .stat-card.danger { background: var(--gradient-danger); color: white; }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
         }
-        .app-icon {
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .modules-section {
+            margin-top: 3rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .module-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .module-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .module-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .module-description {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .module-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .module-features li {
+            padding: 0.5rem 0;
+            color: #6b7280;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .module-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .btn-module {
+            background: var(--gradient-primary);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-module:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+            color: white;
+        }
+
+        .category-section {
+            margin-bottom: 4rem;
+        }
+
+        .category-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--dark-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+
+        .footer {
+            background: var(--dark-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .main-container { margin: -30px 20px 30px; padding: 30px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .modules-grid { grid-template-columns: 1fr; }
+        }
+
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
             width: 80px;
             height: 80px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 2rem;
-            color: white;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
         }
-        .app-icon.bg-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .app-icon.bg-success { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .app-icon.bg-warning { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-        .app-icon.bg-danger { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        .app-icon.bg-info { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
-        .app-icon.bg-secondary { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .app-icon.bg-dark { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); }
-        .app-name {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #1f2937;
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
         }
-        .app-description {
-            color: #64748b;
-            margin-bottom: 1rem;
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
         }
-        .app-button {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            text-decoration: none;
-            color: white;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-        }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .btn-success { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .btn-warning { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-        .btn-danger { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        .btn-info { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
-        .btn-secondary { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .btn-dark { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); }
-        .app-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            color: white;
-            text-decoration: none;
-        }
-        .footer {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-        .footer h3 {
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-        .footer p {
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        @media (max-width: 768px) {
-            .header h1 { font-size: 2rem; }
-            .header p { font-size: 1rem; }
-            .stats-container { gap: 1rem; }
-            .stat-card { min-width: 120px; padding: 1rem; }
-            .stat-number { font-size: 2rem; }
-            .category-title { font-size: 2rem; }
-            .apps-grid { grid-template-columns: 1fr; }
-            .content { padding: 2rem 1rem; }
-            .app-card { padding: 1.5rem; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-content">
-                <div class="d-flex align-items-center justify-content-center mb-4">
-                    <img src="assets/logo.png" alt="La Estación del Dominó" class="logo-header me-4" style="height: 80px; width: auto; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                    <div class="text-center">
-                        <h1><i class="fas fa-trophy"></i> Sistema de Gestión Deportiva</h1>
-                        <p>Plataforma integral para la administración de atletas, asociaciones, torneos e inscripciones</p>
-                    </div>
-                </div>
-                
-                <!-- Botones de navegación -->
-                <div class="text-center mt-3">
-                    <button class="btn btn-outline-light me-2" onclick="window.history.back()" title="Página anterior">
-                        <i class="fas fa-arrow-left"></i> Anterior
-                    </button>
-                    <button class="btn btn-outline-light" onclick="window.location.reload()" title="Recargar página">
-                        <i class="fas fa-sync-alt"></i> Recargar
-                    </button>
-                </div>
-                
-                <div class="stats-container">
-                    <div class="stat-card">
-                        <span class="stat-number"><?php echo $stats['total_apps']; ?></span>
-                        <span class="stat-label">Aplicaciones</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number"><?php echo $stats['total_categories']; ?></span>
-                        <span class="stat-label">Categorías</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number"><?php echo $stats['active_apps']; ?></span>
-                        <span class="stat-label">Activas</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">100%</span>
-                        <span class="stat-label">Responsive</span>
-                    </div>
-                </div>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-trophy me-2"></i>Convernva
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#inicio">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#modulos">Módulos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#estadisticas">Estadísticas</a>
+                    </li>
+                </ul>
             </div>
         </div>
+    </nav>
 
-        <!-- Content -->
-        <div class="content">
-            <?php foreach ($applications as $categoryKey => $category): ?>
-            <div class="category-section">
-                <div class="category-header">
-                    <h2 class="category-title"><?php echo isset($category['title']) ? $category['title'] : 'Categoría'; ?></h2>
-                    <p class="category-description"><?php echo isset($category['description']) ? $category['description'] : ''; ?></p>
-                </div>
+    <!-- Hero Section -->
+    <section class="hero-section" id="inicio">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content" data-aos="fade-up">
+                <h1 class="hero-title">Sistema de Gestión Deportiva</h1>
+                <p class="hero-subtitle">Plataforma integral para la administración de asociaciones deportivas, atletas, torneos y gestión financiera</p>
+            </div>
+        </div>
+    </section>
 
-                <div class="apps-grid">
-                    <?php if (isset($category['apps']) && is_array($category['apps'])): ?>
-                        <?php foreach ($category['apps'] as $app): ?>
-                        <?php if (isset($app['status']) && $app['status'] === 'active'): ?>
-                        <div class="app-card">
-                            <div class="app-header">
-                                <div class="app-icon bg-<?php echo isset($app['color']) ? $app['color'] : 'primary'; ?>">
-                                    <i class="<?php echo isset($app['icon']) ? $app['icon'] : 'fas fa-cog'; ?>"></i>
-                                </div>
-                                <h3 class="app-name"><?php echo isset($app['name']) ? $app['name'] : 'Aplicación'; ?></h3>
-                                <p class="app-description"><?php echo isset($app['description']) ? $app['description'] : ''; ?></p>
-                            </div>
-                            
-                            <div class="app-body">
-                                <a href="<?php echo isset($app['url']) ? $app['url'] : '#'; ?>" class="app-button btn-<?php echo isset($app['color']) ? $app['color'] : 'primary'; ?>">
-                                    <i class="fas fa-external-link-alt"></i> Acceder a <?php echo isset($app['name']) ? $app['name'] : 'Aplicación'; ?>
-                                </a>
-                            </div>
+    <!-- Main Container -->
+    <div class="container">
+        <div class="main-container">
+            <!-- Estadísticas Rápidas -->
+            <section class="stats-section" id="estadisticas">
+                <h2 class="section-title" data-aos="fade-up">Estadísticas del Sistema</h2>
+                <div class="stats-grid">
+                    <div class="stat-card primary" data-aos="fade-up" data-aos-delay="100">
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
                         </div>
-                        <?php endif; ?>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                        <div class="stat-number"><?php echo $stats['asociaciones']; ?></div>
+                        <div class="stat-label">Asociaciones Activas</div>
+                    </div>
+                    
+                    <div class="stat-card secondary" data-aos="fade-up" data-aos-delay="200">
+                        <div class="stat-icon">
+                            <i class="fas fa-running"></i>
+                        </div>
+                        <div class="stat-number"><?php echo $stats['atletas']; ?></div>
+                        <div class="stat-label">Atletas Registrados</div>
+                    </div>
+                    
+                    <div class="stat-card success" data-aos="fade-up" data-aos-delay="300">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-number"><?php echo $stats['torneos']; ?></div>
+                        <div class="stat-label">Torneos Activos</div>
+                    </div>
+                    
+                    <div class="stat-card warning" data-aos="fade-up" data-aos-delay="400">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-number"><?php echo $stats['deudas']; ?></div>
+                        <div class="stat-label">Deudas Pendientes</div>
+                    </div>
+                    
+                    <div class="stat-card danger" data-aos="fade-up" data-aos-delay="500">
+                        <div class="stat-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="stat-number"><?php echo $stats['inscripciones']; ?></div>
+                        <div class="stat-label">Inscripciones</div>
+                    </div>
                 </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
+            </section>
 
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-content">
-                <h3><i class="fas fa-heart"></i> Convernva</h3>
-                <p>Sistema de Gestión Deportiva desarrollado con las mejores tecnologías web modernas. 
-                   Diseñado para ofrecer una experiencia de usuario excepcional y funcionalidades completas 
-                   para la administración deportiva.</p>
-                <p class="mt-3">
-                    <small>&copy; <?php echo date('Y'); ?> Convernva. Todos los derechos reservados.</small>
-                </p>
-            </div>
+            <!-- Módulos del Sistema -->
+            <section class="modules-section" id="modulos">
+                <h2 class="section-title" data-aos="fade-up">Módulos del Sistema</h2>
+                
+                <!-- Gestión de Entidades -->
+                <div class="category-section">
+                    <h3 class="category-title" data-aos="fade-up">Gestión de Entidades</h3>
+                    <div class="modules-grid">
+                        <div class="module-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="module-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <h4 class="module-title">Gestión de Asociaciones</h4>
+                            <p class="module-description">Administra asociaciones deportivas con información completa de directivos, registro y estado.</p>
+                            <ul class="module-features">
+                                <li>CRUD completo de asociaciones</li>
+                                <li>Gestión de directivos</li>
+                                <li>Control de estado y registro</li>
+                                <li>Estadísticas y reportes</li>
+                            </ul>
+                            <a href="crud_asociacion/" class="btn-module">Acceder</a>
+                        </div>
+
+                        <div class="module-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="module-icon">
+                                <i class="fas fa-running"></i>
+                            </div>
+                            <h4 class="module-title">Gestión de Atletas</h4>
+                            <p class="module-description">Sistema completo para el registro y administración de atletas deportivos.</p>
+                            <ul class="module-features">
+                                <li>Registro de atletas</li>
+                                <li>Gestión de afiliaciones</li>
+                                <li>Control de transferencias</li>
+                                <li>Subida de documentos</li>
+                            </ul>
+                            <a href="crud_atleta/" class="btn-module">Acceder</a>
+                        </div>
+
+                        <div class="module-card" data-aos="fade-up" data-aos-delay="300">
+                            <div class="module-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <h4 class="module-title">Gestión de Torneos</h4>
+                            <p class="module-description">Administra torneos deportivos con control de fechas, categorías y participantes.</p>
+                            <ul class="module-features">
+                                <li>Creación de torneos</li>
+                                <li>Gestión de categorías</li>
+                                <li>Control de fechas</li>
+                                <li>Exportación de datos</li>
+                            </ul>
+                            <a href="crud_torneos/" class="btn-module">Acceder</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestión Financiera -->
+                <div class="category-section">
+                    <h3 class="category-title" data-aos="fade-up">Gestión Financiera</h3>
+                    <div class="modules-grid">
+                        <div class="module-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="module-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <h4 class="module-title">Gestión Financiera</h4>
+                            <p class="module-description">Control completo de deudas, pagos y finanzas de las asociaciones deportivas.</p>
+                            <ul class="module-features">
+                                <li>Control de deudas</li>
+                                <li>Gestión de pagos</li>
+                                <li>Reportes financieros</li>
+                                <li>Estadísticas de cobranza</li>
+                            </ul>
+                            <a href="gestion_financiera/" class="btn-module">Acceder</a>
+                        </div>
+
+                        <div class="module-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="module-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h4 class="module-title">Estadísticas e Inscripciones</h4>
+                            <p class="module-description">Análisis estadístico de inscripciones y gestión de deudas por pagos.</p>
+                            <ul class="module-features">
+                                <li>Estadísticas de inscripciones</li>
+                                <li>Gestión de deudas</li>
+                                <li>Reportes de pagos</li>
+                                <li>Análisis de tendencias</li>
+                            </ul>
+                            <a href="estadisticas_inscripcion/" class="btn-module">Acceder</a>
+                        </div>
+
+                        <div class="module-card" data-aos="fade-up" data-aos-delay="300">
+                            <div class="module-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <h4 class="module-title">Gestión de Costos</h4>
+                            <p class="module-description">Administración de costos y tarifas para servicios deportivos.</p>
+                            <ul class="module-features">
+                                <li>Configuración de costos</li>
+                                <li>Gestión de tarifas</li>
+                                <li>Control de precios</li>
+                                <li>Reportes de costos</li>
+                            </ul>
+                            <a href="crud_costos/" class="btn-module">Acceder</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operaciones y Servicios -->
+                <div class="category-section">
+                    <h3 class="category-title" data-aos="fade-up">Operaciones y Servicios</h3>
+                    <div class="modules-grid">
+                        <div class="module-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="module-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <h4 class="module-title">Inscripción a Torneos</h4>
+                            <p class="module-description">Sistema de inscripción para atletas en torneos deportivos.</p>
+                            <ul class="module-features">
+                                <li>Inscripción de atletas</li>
+                                <li>Selección de categorías</li>
+                                <li>Validación de datos</li>
+                                <li>Confirmación de inscripciones</li>
+                            </ul>
+                            <a href="inscripcion_torneo/" class="btn-module">Acceder</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Sistema de Gestión Deportiva - Convernva. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="assets/js/main.js"></script>
 </body>
 </html>
