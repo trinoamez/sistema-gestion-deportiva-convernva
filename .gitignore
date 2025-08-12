@@ -20,27 +20,20 @@ temp/
 tmp/
 cache/
 
-# ===== ARCHIVOS DE UPLOAD =====
-uploads/
-images/uploads/
-files/uploads/
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.pdf
-*.doc
-*.docx
-*.xls
-*.xlsx
+# ===== ARCHIVOS DE UPLOAD (PERMITIR LOGOS Y ASSETS DEL PROYECTO) =====
+# Solo ignorar uploads de usuario, no los assets del proyecto
+uploads/user_uploads/
+uploads/temp/
+uploads/cache/
+# PERMITIR: assets/, logos del proyecto, archivos de configuración
 
-# ===== ARCHIVOS DE BASE DE DATOS =====
-*.sql
-*.db
-*.sqlite
-*.sqlite3
+# ===== ARCHIVOS DE BASE DE DATOS (PERMITIR SCRIPTS SQL DEL PROYECTO) =====
+# Solo ignorar backups y dumps, no los scripts de configuración
 backup/
 dumps/
+*.backup
+*.dump
+# PERMITIR: *.sql (scripts de configuración del proyecto)
 
 # ===== ARCHIVOS DE IDE =====
 .vscode/
@@ -67,8 +60,8 @@ build/
 
 # ===== ARCHIVOS DE TESTING =====
 coverage/
-phpunit.xml
 .phpunit.result.cache
+# PERMITIR: phpunit.xml (configuración del proyecto)
 
 # ===== ARCHIVOS DE DEPLOYMENT =====
 deploy/
